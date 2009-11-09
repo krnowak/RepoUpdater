@@ -191,8 +191,7 @@ sub check_dir($$)
       print color 'reset';
       for my $command (@{$ref_h_types->{$directory}})
       {
-         print $command . "\n";
-#        system($command);
+        system($command);
       }
       $updated = 1;
       last;
