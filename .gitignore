@@ -1,0 +1,14 @@
+# root
+
+/INSTALL
+/Makefile
+/Makefile.in
+/aclocal.m4
+/autom4te.cache
+/config.*
+/configure
+
+# build
+
+/build/install-sh
+/build/missing

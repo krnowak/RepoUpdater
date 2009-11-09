@@ -1,0 +1,261 @@
+#!@PERL@ -w
+
+use strict;
+use warnings;
+use IO::File;
+use IO::Dir;
+use Term::ANSIColor;
+use User::pwent;
+
+sub parse_conf_file($);
+sub line_is_ignorable($);
+sub split_headers($);
+sub split_types($);
+sub check_dir($$);
+sub get_subdirs($);
+
+# getting home directory.
+my $home_dir;
+
+if (defined ($ENV{HOME}))
+{
+  $home_dir = $ENV{HOME};
+}
+elsif (defined $ENV{LOGDIR})
+{
+  $home_dir = $ENV{LOGDIR};
+}
+elsif (defined (my $pw = getpwuid($<)))
+{
+  if (defined $pw->dir)
+  {
+    $home_dir = $pw->dir;
+  }
+  else
+  {
+    die "Homeless."
+  }
+}
+else
+{
+  die "Homeless.";
+}
+
+sub parse_conf_file($)
+{
+  my $ref_h_config = {};
+  my $conf_file = shift;
+  my $file = IO::File->new($conf_file, "r");
+  my @config_lines = <$file>;
+  $file->close();
+  chomp (@config_lines);
+  my $ref_h_headers = split_headers(\@config_lines);
+  @config_lines = ();
+  
+  $ref_h_config->{paths} = $ref_h_headers->{paths};
+  $ref_h_config->{types} = split_types($ref_h_headers->{types});
+  return $ref_h_config;
+}
+
+sub line_is_ignorable($)
+{
+  my $line = shift;
+  
+  # if line begins with hash, ignore it.
+  if ($line =~ m/^#/)
+  {
+    return 1;
+  }
+  # if lines consists only of whitespaces, ignore it.
+  elsif ($line =~ m/^\s*$/)
+  {
+    return 1;
+  }
+  return 0;
+}
+
+sub split_headers($)
+{
+  my $ref_a_config = shift;
+  my %headers = ();
+  my @reporoots = ();
+  my @repotypes = ();
+  my %states = (types => 0,
+                paths => 1,
+                unknown => 2);
+  my $state = $states{unknown};
+  
+  for my $line (@{$ref_a_config})
+  {
+    if (line_is_ignorable($line))
+    {
+      next;
+    }
+    # if line is [something], where something is one of reporoots and repotypes
+    # assign a proper type.
+    if ($line =~ m:^\s*\[\s*(.*)\s*\]\s*$:)
+    {
+      my $header = $1;
+      if ($header eq "reporoots")
+      {
+        $state = $states{paths};
+      }
+      elsif ($header eq "repotypes")
+      {
+       $state = $states{types};
+      }
+      next;
+    }
+    if ($state == $states{paths})
+    {
+      # if path is not absolute, append home_dir to it.
+      unless ($line =~ m#^/#)
+      {
+        $line = $home_dir . '/' . $line;
+      }
+      # if path ends with one or more /, remove them.
+      if ($line =~ m#^(/.*?)/+$#)
+      {
+        $line = $1;
+      }
+      push @reporoots, $line;
+    }
+    elsif ($state == $states{types})
+    {
+      push @repotypes, $line;
+    }
+  }
+  $headers{"types"} = \@repotypes;
+  $headers{"paths"} = \@reporoots;
+  return \%headers;
+}
+
+sub split_types($)
+{
+  my $ref_a_types = shift;
+  my $inside_dir = 0;
+  my $directory;
+  my %types = ();
+  for my $line (@{$ref_a_types})
+  {
+    # if line is {something}, next command will be appended to something.
+    if ($line =~ m:^\s*\{\s*(.*)\s*\}\s*$:)
+    {
+      $directory = $1;
+      $inside_dir = 1;
+      $types{$directory} = [] unless exists $types{$directory};
+      next;
+    }
+    if ($inside_dir)
+    {
+      push @{$types{$directory}}, $line;
+    }
+  }
+  return \%types;
+}
+
+sub check_dir($$)
+{
+  my $path = shift;
+  my $ref_h_types = shift;
+  my $updated = 0;
+  
+  # enter directory.
+  chdir $path;
+  # check if there are repo directories.
+  for my $directory (keys %{$ref_h_types})
+  {
+    my $dir;
+    my $scm;
+    if ($directory =~ m#(.+?),(.+)#)
+    {
+      $dir = $1;
+      $scm = $2;
+    }
+    else
+    {
+      $dir = $directory;
+      $scm = undef;
+    }
+    if (-d $dir)
+    {
+      my $project = $path;
+      $project =~ s:.*/::;
+      print color 'bold';
+      print "updating " . $project;
+      if (defined $scm)
+      {
+        print " using " . $scm;
+      }
+      print ":\n";
+      print color 'reset';
+      for my $command (@{$ref_h_types->{$directory}})
+      {
+         print $command . "\n";
+#        system($command);
+      }
+      $updated = 1;
+      last;
+    }
+  }
+  # if there are no repo dirs, check all it subdirs.
+  unless ($updated)
+  {
+    my $ref_a_subdirs = get_subdirs($path);
+    for my $subdir (@{$ref_a_subdirs})
+    {
+      check_dir($subdir, $ref_h_types);
+    }
+  }
+}
+
+# get subdirs of a dir.
+sub get_subdirs($)
+{
+  my $path = shift;
+  my $dir_handle = IO::Dir->new($path);
+  my @subdirs = ();
+  if (defined $dir_handle)
+  {
+    while (defined (my $entry = $dir_handle->read))
+    {
+      if ($entry eq "." or $entry eq "..")
+      {
+        next;
+      }
+      my $full_entry = $path . "/" . $entry;
+      if (-d $full_entry)
+      {
+        push @subdirs, $full_entry;
+      }
+    }
+    $dir_handle->close;
+  }
+  return \@subdirs;
+}
+
+#
+# main
+#
+
+my $conf_file_name = ".u-rrc";
+my $conf_file = $home_dir . "/" . $conf_file_name;
+my $ref_h_repo_data;
+
+if (-f $conf_file)
+{
+  $ref_h_repo_data = parse_conf_file($conf_file)
+}
+else
+{
+  print "No $conf_file_name found at $ENV{HOME}\n";
+  exit 1;
+}
+
+for my $path (@{$ref_h_repo_data->{"paths"}})
+{
+  check_dir($path, $ref_h_repo_data->{"types"});
+}
+print color 'bold';
+print "done.\n";
+print color 'reset';

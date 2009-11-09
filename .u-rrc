@@ -1,0 +1,20 @@
+# reporoots - paths to repository or to directory, which subdirs are repos.
+[reporoots]
+
+# repotypes - describes directory, name and command used for updating.
+[repotypes]
+{.svn,subversion}
+svn update
+
+{.git,git}
+git pull
+
+{.hg,mercurial}
+hg pull
+hg update
+
+{.bzr,bazaar}
+bzr update
+
+{CVS,cvs}
+cvs update
