@@ -1,0 +1,3 @@
+- more robust config parsing.
+- logging
+- parameters for verbosity, logfile, conffile?
