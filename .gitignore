@@ -1,16 +1,10 @@
-# root
-
-/INSTALL
-/Makefile
-/Makefile.in
-/aclocal.m4
-/autom4te.cache
-/config.*
-/configure
-/update-repos
-/update-repos-*.tar.*
-
-# build
-
-/build/install-sh
-/build/missing
+blib*
+Makefile
+Makefile.old
+Build
+_build*
+pm_to_blib*
+*.tar.gz
+.lwpcookies
+RepoUpdater-*
+cover_db

@@ -1,0 +1,95 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use Carp;
+use Getopt::Long;
+use RepoUpdater;
+
+#
+# subs
+#
+sub silent
+{}
+
+sub silent_ret
+{
+  my $ref_h_data = shift;
+  my $ret = $ref_h_data->{'retval'};
+  if ($ret)
+  {
+    if ($ret != -1 and ($ret & 127) == 2)
+    {
+      sleep(1);
+    }
+    $ret = 1;
+  }
+  $ret;
+}
+
+sub print_usage
+{
+  print "usage: " . $0 . " [options]\n",
+        "options:\n",
+        "    --silent   - shh, be vewy kwiet\n",
+        "    --help     - display this help\n",
+        "    --version  - display version\n",
+        "    --gen-conf - create sample configuration file in your home dir\n";
+}
+
+#
+# parse flags
+#
+my $silent = 0;
+my $help = 0;
+my $version = 0;
+my $gen_conf = 0;
+
+my $parsing_ok = GetOptions('silent' => \$silent,
+                            'help' => \$help,
+                            'version' => \$version,
+                            'gen-conf' => \$gen_conf);
+
+if (not $parsing_ok or $help)
+{
+  print_usage();
+  exit 0;
+}
+
+if ($version)
+{
+  print 'u-r, version ' . $RepoUpdater::VERSION . "\n";
+  exit 0;
+}
+
+if ($gen_conf)
+{
+  my $home = File::HomeDir->my_home;
+
+  # code taken from Config::Auto.
+  my $whoami = basename($0);
+  $whoami =~ s/\.(pl|t)$//;
+
+  # relative path to out config file.
+  my $conf_name = File::Spec->catfile($home, '.' . $whoami . 'rc');
+
+  # lets create conf file.
+  my $conf = IO::File->new($conf_name, "w");
+  croak 'failed to create ' . $conf_name . "\n" unless (defined($conf));
+  $conf->print("# read CONFIGURATION docs in RepoUpdater docs!\n# (just run: perldoc RepoUpdater)\npaths = " . File::Spec->catdir('your', 'repos' , 'directory') . "\n\ntools = a b\n\na-dir = .a\na-name = a\na-commands = \"touch " . $testfile . "\" \"rm " . $testfile . "\"\n\nb-dir = .b\nb-name = b\nb-commands = \"touch " . $testfile . "\" \"rm " . $testfile . "\"\n");
+  # we are done.
+  $conf->close();
+  exit 0;
+}
+
+my $repoupdater;
+if ($silent)
+{
+  $repoupdater = RepoUpdater->new(pre_u_h => \&silent, pre_c_h => \&silent, post_c_h => \&silent_ret, post_u_h => \&silent, print_output => 0);
+}
+else
+{
+  $repoupdater = RepoUpdater->new();
+}
+
+$repoupdater->update();

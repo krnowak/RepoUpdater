@@ -1,0 +1,19 @@
+---
+name: RepoUpdater
+version: 0.01
+author:
+  - 'Krzesimir Nowak <qdlacz@gmail.com>'
+abstract: Configurable code repository updater.
+license: perl
+build_requires:
+  Test::More: 0
+generated_by: Module::Build version 0.32
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
+provides:
+  RepoUpdater:
+    file: lib/RepoUpdater.pm
+    version: 0.01
+resources:
+  license: ~

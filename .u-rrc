@@ -1,20 +1,23 @@
-# reporoots - paths to repository or to directory, which subdirs are repos.
-[reporoots]
+paths = projekty/bash/niemoje projekty/c/niemoje projekty/cpp/niemoje projekty/perl/niemoje projekty/python/niemoje cvs
 
-# repotypes - describes directory, name and command used for updating.
-[repotypes]
-{.svn,subversion}
-svn update
+tools = svn git hg cvs bzr
 
-{.git,git}
-git pull
+svn-dir = .svn
+svn-name = subversion
+svn-commands = "svn update"
 
-{.hg,mercurial}
-hg pull
-hg update
+git-dir = .git
+git-name = git
+git-commands = "git pull"
 
-{.bzr,bazaar}
-bzr update
+hg-dir = .hg
+hg-name = mercurial
+hg-commands = "hg pull" "hg update"
 
-{CVS,cvs}
-cvs update
+cvs-dir = CVS
+cvs-name = CVS
+cvs-commands = "cvs update -d"
+
+bzr-dir = .bzr
+bzr-name = bazaar
+bzr-commands = "bzr update"

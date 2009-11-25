@@ -1,0 +1,13 @@
+Build.PL
+Changes
+MANIFEST
+README
+bin/u-r
+lib/RepoUpdater.pm
+t/00-load.t
+t/01-silent.t
+t/02-silent-config.t
+t/pod-coverage.t
+t/pod.t
+Makefile.PL
+META.yml
