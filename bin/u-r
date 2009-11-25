@@ -76,7 +76,7 @@ if ($gen_conf)
   # lets create conf file.
   my $conf = IO::File->new($conf_name, "w");
   croak 'failed to create ' . $conf_name . "\n" unless (defined($conf));
-  $conf->print("# read CONFIGURATION docs in RepoUpdater docs!\n# (just run: perldoc RepoUpdater)\npaths = " . File::Spec->catdir('your', 'repos' , 'directory') . "\n\ntools = a b\n\na-dir = .a\na-name = a\na-commands = \"touch " . $testfile . "\" \"rm " . $testfile . "\"\n\nb-dir = .b\nb-name = b\nb-commands = \"touch " . $testfile . "\" \"rm " . $testfile . "\"\n");
+  $conf->print("# read CONFIGURATION docs in RepoUpdater docs!\n# (just run: perldoc RepoUpdater)\npaths = " . File::Spec->catdir('your', 'repos' , 'directory') . "\n\ntools = a b\n\na-dir = .a\na-name = a\na-commands = \"touch empty\" \"rm empty\"\n\nb-dir = .b\nb-name = b\nb-commands = \"touch empty\" \"rm empty\"\n");
   # we are done.
   $conf->close();
   exit 0;
