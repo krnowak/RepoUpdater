@@ -31,10 +31,11 @@ sub print_usage
 {
   print "usage: " . $0 . " [options]\n",
         "options:\n",
-        "    --silent   - shh, be vewy kwiet\n",
-        "    --help     - display this help\n",
-        "    --version  - display version\n",
-        "    --gen-conf - create sample configuration file in your home dir\n";
+        "    --silent    - shh, be vewy kwiet\n",
+        "    --help      - display this help\n",
+        "    --version   - display version\n",
+        "    --gen-conf  - create sample configuration file in your home dir\n",
+        "    --get-paths - prints all repositories' paths and quits\n";
 }
 
 #
@@ -44,11 +45,13 @@ my $silent = 0;
 my $help = 0;
 my $version = 0;
 my $gen_conf = 0;
+my $get_paths = 0;
 
 my $parsing_ok = GetOptions('silent' => \$silent,
                             'help' => \$help,
                             'version' => \$version,
-                            'gen-conf' => \$gen_conf);
+                            'gen-conf' => \$gen_conf,
+                            'get-paths' => \$get_paths);
 
 if (not $parsing_ok or $help)
 {
@@ -90,6 +93,14 @@ if ($silent)
 else
 {
   $repoupdater = RepoUpdater->new();
+}
+
+if ($get_paths)
+{
+  local $" = "\n";
+  my $paths = $repoupdater->all_paths();
+  print "@{$paths}\n";
+  exit 0;
 }
 
 $repoupdater->update();

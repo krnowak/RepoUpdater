@@ -20,11 +20,11 @@ RepoUpdater - Configurable code repository updater.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
@@ -682,6 +682,32 @@ sub update
   {
     $class->update_one();
   }
+}
+
+=head2 current_path
+
+C<current_path> returns path to a repo that will be updated next.
+
+=cut
+
+sub current_path
+{
+  @_ == 1 or croak 'usage: $c_p = $ru->current_path()';
+  my $class = shift;
+  return $class->{'_repo_data'}{$p_opt}[$class->{'_iter'}];
+}
+
+=head2 all_paths
+
+C<all_paths> returns arrayref of paths. Do not modify!
+
+=cut
+
+sub all_paths
+{
+  @_ == 1 or croak 'usage: $a_p = $ru->all_paths()';
+  my $class = shift;
+  return $class->{'_repo_data'}{$p_opt};
 }
 
 =head1 HANDLERS
