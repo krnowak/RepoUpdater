@@ -617,6 +617,10 @@ sub update_one
   my $iter = $class->{'_iter'};
   if ($iter == $class->repo_count())
   {
+    if ($iter == 0)
+    {
+      return;
+    }
     $iter = 0;
   }
   $class->{'_iter'} = $iter + 1;

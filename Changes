@@ -2,6 +2,8 @@ Revision history for RepoUpdater
 
         Added new methods - current_path and all_paths.
         Updated u-r to use new methods.
+	Added missing requires to Build.PL.
+	Fix updating when no repos are available.
 0.01    Wed Nov 25 2009
         First version, released on an unsuspecting world.
 

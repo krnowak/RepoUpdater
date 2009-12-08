@@ -12,6 +12,11 @@ my $builder = Module::Build->new(
     },
     add_to_cleanup      => [ 'RepoUpdater-*' ],
     create_makefile_pl => 'traditional',
+    requires => {
+        'Config::Auto' => 0,
+        'File::HomeDir' => 0,
+        'IO::CaptureOutput' => 0,
+    }
 );
 
 $builder->create_build_script();
